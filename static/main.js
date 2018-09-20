@@ -2,8 +2,8 @@
 var Direct = {
     TOP: 1,
     BOTTOM: 2,
-    LEFT: 3,
-    RIGHT: 4
+    LEFT: 4,
+    RIGHT: 8
 };
 
 Object.freeze(Direct);
@@ -131,6 +131,7 @@ function BubbleManager(options) {
         distance = options.distance || canvas.height / 2,
         maxDistPerTick = options.maxSpeed * tick / 1000,
         minDistPerTick = options.minSpeed * tick / 1000,
+        directions = getDirections(from),
         ctx = canvas.getContext("2d"),
         clock = 0,
         running = false,
@@ -150,6 +151,23 @@ function BubbleManager(options) {
         canvas.style.left = 0;
         canvas.setAttribute("width", canvas.parentElement.clientWidth.toString());
         canvas.setAttribute("height", canvas.parentElement.clientHeight.toString());
+    }
+
+    function getDirections(v) {
+        var result = [],
+            d;
+
+        for (d in Direct) {
+            if (v & Direct[d]) {
+                result.push(Direct[d]);
+            }
+        }
+
+        return result;
+    }
+
+    function choiceDirection() {
+        return directions[Math.floor(Math.random() * directions.length)];
     }
 
     function initBubbles() {
@@ -176,22 +194,26 @@ function BubbleManager(options) {
         meta = meta || {};
         meta.r = r;
 
-        switch (from) {
+        switch (choiceDirection()) {
             case Direct.BOTTOM:
                 meta.x = randrange(0, canvas.width);
                 meta.y = canvas.height + r;
+                meta.from = Direct.BOTTOM;
                 break;
             case Direct.TOP:
                 meta.x = randrange(0, canvas.width);
                 meta.y = -r;
+                meta.from = Direct.TOP;
                 break;
             case Direct.LEFT:
                 meta.x = -r;
                 meta.y = randrange(0, canvas.height);
+                meta.from = Direct.LEFT;
                 break;
             case Direct.RIGHT:
                 meta.x = canvas.width + r;
                 meta.y = randrange(0, canvas.height);
+                meta.from = Direct.RIGHT;
                 break;
             default:  // no default
         }
@@ -200,9 +222,12 @@ function BubbleManager(options) {
     }
 
     this.createBubble = function () {
-        var c = typeof color === 'function' ? color() : color.clone();
+        var c = typeof color === 'function' ? color() : color.clone(),
+            bubble;
 
-        return new Bubble(createOrResetMeta({color: c}), randrange(minDistPerTick, maxDistPerTick));
+        bubble = new Bubble(createOrResetMeta({color: c}), randrange(minDistPerTick, maxDistPerTick));
+
+        return bubble;
     };
 
     this.clear = function () {
@@ -216,7 +241,7 @@ function BubbleManager(options) {
 
         for (i = 0; i < bubbles.length; i++) {
             bubble = bubbles[i];
-            switch (from) {
+            switch (bubble.shapeMeta.from) {
                 case Direct.BOTTOM:
                     bubble.up();
                     break;
