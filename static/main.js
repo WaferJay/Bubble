@@ -121,7 +121,8 @@ function Bubble(meta, s) {
 
 function BubbleManager(options) {
     var bubbles = [],
-        canvas = options.canvas,
+        backgroundImage = options.backgroundImage,
+        parent = options.element,
         color = options.color,
         minRadius = options.minRadius,
         maxRadius = options.maxRadius,
@@ -131,6 +132,7 @@ function BubbleManager(options) {
         distance = options.distance || canvas.height / 2,
         maxDistPerTick = options.maxSpeed * tick / 1000,
         minDistPerTick = options.minSpeed * tick / 1000,
+        canvas = document.createElement("canvas"),
         directions = getDirections(from),
         ctx = canvas.getContext("2d"),
         clock = 0,
@@ -144,14 +146,23 @@ function BubbleManager(options) {
     this.onTransform = options.onTransform;
     this.onTick = options.onTick;
 
-    if (options.matchParent) {
-        canvas.parentElement.style.position = 'relative';
-        canvas.style.position = 'absolute';
-        canvas.style.top = 0;
-        canvas.style.left = 0;
-        canvas.setAttribute("width", canvas.parentElement.clientWidth.toString());
-        canvas.setAttribute("height", canvas.parentElement.clientHeight.toString());
-    }
+    parent.style.backgroundImage = backgroundImage;
+    parent.style.position = 'relative';
+    parent.style.backgroundRepeat = "no-repeat";
+    parent.style.backgroundSize = "cover";
+    parent.style.backgroundPosition = "center";
+
+    canvas.style.position = 'absolute';
+    canvas.style.top = 0;
+    canvas.style.left = 0;
+
+    canvas.setAttribute("width", parent.clientWidth.toString());
+    canvas.setAttribute("height", parent.clientHeight.toString());
+
+    canvas.style.width = parent.clientWidth + "px";
+    canvas.style.height = parent.clientHeight + "px";
+
+    parent.appendChild(canvas);
 
     function getDirections(v) {
         var result = [],
@@ -225,7 +236,7 @@ function BubbleManager(options) {
         var c = typeof color === 'function' ? color() : color.clone(),
             bubble;
 
-        bubble = new Bubble(createOrResetMeta({color: c}), randrange(minDistPerTick, maxDistPerTick));
+        bubble = new Bubble(createOrResetMeta({color: c, originColor: c.clone()}), randrange(minDistPerTick, maxDistPerTick));
 
         return bubble;
     };
@@ -236,6 +247,7 @@ function BubbleManager(options) {
 
     function transform() {
         var i,
+            originColor,
             colorSub,
             bubble;
 
@@ -257,14 +269,15 @@ function BubbleManager(options) {
                 default:  // no default
             }
 
+            originColor = bubble.shapeMeta.originColor;
             // REVIEW: 划分出去
             if (bubble.shapeMeta.color.a > 0) {
-                colorSub = bubble.speed * color.a / distance;
+                colorSub = bubble.speed * originColor.a / distance;
                 bubble.shapeMeta.color.a -= colorSub;
             } else if(typeof bubble.shapeMeta.color.a === 'number') {
                 createOrResetMeta(bubble.shapeMeta);
 
-                bubble.shapeMeta.color.a = color.a;
+                bubble.shapeMeta.color.a = originColor.a;
             }
 
             typeof that.onTransform === 'function' && that.onTransform(bubble);

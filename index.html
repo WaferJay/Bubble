@@ -6,18 +6,11 @@
 
     <style>
         * {margin: 0; padding: 0;}
-        #img {
-            background: url(static/img/air_pollution_smoke_stacks.home_page.jpg) no-repeat center;
-            -webkit-background-size: cover;
-            background-size: cover;
-        }
     </style>
 </head>
 <body>
 
-<div id="img" style="width: 500px; height: 200px; margin: 30px auto">
-    <canvas id="canvas"></canvas>
-</div>
+<div id="img" style="height: 600px;"></div>
 
 <script src="static/main.js"></script>
 <script>
@@ -25,21 +18,26 @@
     var bm;
 
     window.onload = function () {
-        var canvas = document.getElementById("canvas"),
-            bubbleManager;
+        var bubbleManager;
 
         bm = bubbleManager = new BubbleManager({
-            canvas: canvas,
+            element: document.getElementById("img"),
+            backgroundImage: "url(static/img/0.jpg)",
             tick: 50,
             minSpeed: 10,
             maxSpeed: 30,
-            bubbleFrom: Direct.BOTTOM | Direct.LEFT | Direct.RIGHT,
+            bubbleFrom: Direct.BOTTOM,
             minRadius: 8,
             maxRadius: 20,
             matchParent: true,
             distance: 200,
-            numBubble: 40,
-            color: parseHexColor("#ffffff")
+            numBubble: 200,
+            color: function() {
+                var colors = ["#ffffff22", "#bf000022", "#0dc50022", "#1d4eb422", "#d1579f22"],
+                    i = Math.floor(Math.random() * colors.length);
+
+                return parseHexColor(colors[i]);
+            }
         });
 
         bubbleManager.startLoop();
