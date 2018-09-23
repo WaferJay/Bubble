@@ -121,6 +121,7 @@ function Bubble(meta, s) {
 
 function BubbleManager(options) {
     var bubbles = [],
+        canvas = document.createElement("canvas"),
         backgroundImage = options.backgroundImage,
         parent = options.element,
         color = options.color,
@@ -132,7 +133,6 @@ function BubbleManager(options) {
         distance = options.distance || canvas.height / 2,
         maxDistPerTick = options.maxSpeed * tick / 1000,
         minDistPerTick = options.minSpeed * tick / 1000,
-        canvas = document.createElement("canvas"),
         directions = getDirections(from),
         ctx = canvas.getContext("2d"),
         clock = 0,
